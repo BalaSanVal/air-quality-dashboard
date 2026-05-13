@@ -8,6 +8,7 @@ import {
   getPM25Status,
 } from "../utils/airQualityStatus";
 import { metricInfo } from "../utils/metricInfo";
+import { formatDateTime } from "../utils/formatDate";
 
 function Dashboard() {
   const [measurements, setMeasurements] = useState([]);
@@ -157,7 +158,7 @@ function MeasurementGroup({
 
             <div>
               <span>Fecha y hora</span>
-              <strong>{measurement.fecha_hora}</strong>
+              <strong>{formatDateTime(measurement.fecha_hora)} h</strong>
             </div>
           </div>
 

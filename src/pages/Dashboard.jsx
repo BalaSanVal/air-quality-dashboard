@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Activity, Gauge, Thermometer, Droplets, Wind, Ruler } from "lucide-react";
-import { getAllMeasurements } from "../api/measurements";
+import { getAllMeasurementsWithRetry } from "../api/measurements";
 import MetricCard from "../components/MetricCard";
 import {
   getInformativeStatus,
@@ -16,14 +16,52 @@ function Dashboard() {
   const [selectedExteriorNode, setSelectedExteriorNode] = useState("");
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [loadingMessage, setLoadingMessage] = useState("Cargando datos...");
+  const [isUsingCachedData, setIsUsingCachedData] = useState(false);
 
   useEffect(() => {
     async function loadMeasurements() {
       try {
-        const data = await getAllMeasurements();
+        const cachedMeasurements = localStorage.getItem("latestMeasurements");
+
+        if (cachedMeasurements) {
+          const parsedItems = JSON.parse(cachedMeasurements);
+
+          if (Array.isArray(parsedItems) && parsedItems.length > 0) {
+            setMeasurements(parsedItems);
+            setIsUsingCachedData(true);
+            setLoading(false);
+
+            const interiorNodes = getUniqueNodesByType(parsedItems, "interior");
+            const exteriorNodes = getUniqueNodesByType(parsedItems, "exterior");
+
+            if (interiorNodes.length > 0) {
+              setSelectedInteriorNode(String(interiorNodes[0].id_nodo));
+            }
+
+            if (exteriorNodes.length > 0) {
+              setSelectedExteriorNode(String(exteriorNodes[0].id_nodo));
+            }
+          }
+        }
+
+        setLoadingMessage("Despertando servidor y cargando datos...");
+
+        const data = await getAllMeasurementsWithRetry({
+          attempts: 6,
+          delay: 10000,
+          onRetry: (attempt, attempts) => {
+            setLoadingMessage(
+              `El servidor está despertando. Reintento ${attempt} de ${attempts}...`
+            );
+          },
+        });
+
         const items = data?.items ?? [];
 
         setMeasurements(items);
+        setIsUsingCachedData(false);
+        localStorage.setItem("latestMeasurements", JSON.stringify(items));
 
         const interiorNodes = getUniqueNodesByType(items, "interior");
         const exteriorNodes = getUniqueNodesByType(items, "exterior");
@@ -36,7 +74,9 @@ function Dashboard() {
           setSelectedExteriorNode(String(exteriorNodes[0].id_nodo));
         }
       } catch (error) {
-        setErrorMessage("No se pudieron cargar los datos de la API.");
+        setErrorMessage(
+          "No se pudieron cargar datos nuevos. Verifica la conexión o intenta nuevamente en unos segundos."
+        );
         console.error(error);
       } finally {
         setLoading(false);
@@ -67,7 +107,18 @@ function Dashboard() {
   );
 
   if (loading) {
-    return <main className="page">Cargando datos...</main>;
+    return (
+      <main className="page">
+        <div className="loading-state">
+          <div className="loading-spinner" />
+          <h2>{loadingMessage}</h2>
+          <p>
+            El servicio puede tardar unos segundos si estuvo inactivo. La página
+            seguirá intentando cargar la información automáticamente.
+          </p>
+        </div>
+      </main>
+    );
   }
 
   if (errorMessage) {
@@ -75,7 +126,7 @@ function Dashboard() {
   }
 
   return (
-    <main className="page">
+    <main className="page" id="inicio">
       <section className="hero">
         <h1>Calidad de Aire UPIITA</h1>
         <p>
@@ -84,7 +135,14 @@ function Dashboard() {
         </p>
       </section>
 
-      <section className="section-header">
+      {isUsingCachedData && (
+        <div className="cached-data-alert">
+          Mostrando la última información guardada mientras se actualizan los datos
+          desde el servidor.
+        </div>
+      )}
+
+      <section className="section-header" id="mediciones">
         <h2>Mediciones de calidad de aire</h2>
         <p>
           Consulta las lecturas más recientes por ambiente y por nodo de
@@ -93,6 +151,7 @@ function Dashboard() {
       </section>
 
       <MeasurementGroup
+        id="mediciones-interiores"
         title="Interior"
         description="Mediciones registradas por los nodos instalados en espacios interiores."
         nodes={interiorNodes}
@@ -102,6 +161,7 @@ function Dashboard() {
       />
 
       <MeasurementGroup
+        id="mediciones-exteriores"
         title="Exterior"
         description="Mediciones registradas por los nodos instalados en espacios exteriores."
         nodes={exteriorNodes}
@@ -114,6 +174,7 @@ function Dashboard() {
 }
 
 function MeasurementGroup({
+  id,
   title,
   description,
   nodes,
@@ -122,7 +183,7 @@ function MeasurementGroup({
   measurement,
 }) {
   return (
-    <section className="measurement-group">
+    <section className="measurement-group" id={id}>
       <div className="measurement-group__header">
         <div>
           <h3>{title}</h3>

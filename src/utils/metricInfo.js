@@ -21,7 +21,7 @@ export const metricInfo = {
     title: "Material particulado (PM₁₀)",
     shortName: "PM₁₀",
     description:
-      "El PM10 corresponde a partículas con diámetro menor o igual a 10 micrómetros. Se mide para evaluar polvo, partículas suspendidas y contaminación atmosférica. Esta variable sí puede relacionarse con la escala Aire y Salud.",
+      "El PM₁₀ corresponde a partículas con diámetro menor o igual a 10 micrómetros. Se mide para evaluar polvo, partículas suspendidas y contaminación atmosférica. Esta variable sí puede relacionarse con la escala Aire y Salud.",
   },
   particleSize: {
     title: "Tamaño promedio de partícula",

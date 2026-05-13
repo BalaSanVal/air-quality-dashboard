@@ -10,6 +10,7 @@ import {
 import { metricInfo } from "../utils/metricInfo";
 import { formatDateTime } from "../utils/formatDate";
 import NodeMap from "../components/NodeMap";
+import ChartsAnalysis from "../components/ChartsAnalysis";
 
 function Dashboard() {
   const [measurements, setMeasurements] = useState([]);
@@ -184,6 +185,8 @@ function Dashboard() {
       />
 
       <NodeMap measurements={measurements} />
+
+      <ChartsAnalysis measurements={measurements} />
     </main>
   );
 }

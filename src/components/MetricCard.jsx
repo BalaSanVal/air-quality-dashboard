@@ -1,6 +1,6 @@
 import { Info } from "lucide-react";
 
-function MetricCard({ title, value, unit, status, icon, info }) {
+function MetricCard({ title, titleText, value, unit, status, icon, info }) {
   const safeStatus = status ?? {
     label: "Sin dato",
     risk: "No disponible",
@@ -10,15 +10,17 @@ function MetricCard({ title, value, unit, status, icon, info }) {
   return (
     <article className="metric-card">
       <div className="metric-card__header">
-        <div className="metric-card__title-row">
-          <h3>{title}</h3>
+        <h3>{title}</h3>
+
+        <div className="metric-card__actions">
+          <span className="metric-card__icon">{icon}</span>
 
           {info && (
             <div className="metric-card__info-wrapper">
               <button
                 type="button"
                 className="metric-card__info-button"
-                aria-label={`Información sobre ${title}`}
+                aria-label={`Información sobre ${titleText ?? "esta variable"}`}
               >
                 <Info size={14} />
               </button>
@@ -29,8 +31,6 @@ function MetricCard({ title, value, unit, status, icon, info }) {
             </div>
           )}
         </div>
-
-        <span className="metric-card__icon">{icon}</span>
       </div>
 
       <p className="metric-card__value">

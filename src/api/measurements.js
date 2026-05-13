@@ -5,7 +5,7 @@ const API_BASE_URL =
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 20000,
+  timeout: 60000,
 });
 
 function wait(milliseconds) {
@@ -15,8 +15,9 @@ function wait(milliseconds) {
 export async function wakeApi() {
   try {
     await apiClient.get("/health");
-  } catch (error) {
-    console.warn("La API todavía no responde al endpoint /health.", error);
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -31,8 +32,8 @@ export async function getLatestMeasurement() {
 }
 
 export async function getAllMeasurementsWithRetry({
-  attempts = 5,
-  delay = 12000,
+  attempts = 6,
+  delay = 10000,
   onRetry,
 } = {}) {
   let lastError;

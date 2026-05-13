@@ -9,6 +9,7 @@ import {
 } from "../utils/airQualityStatus";
 import { metricInfo } from "../utils/metricInfo";
 import { formatDateTime } from "../utils/formatDate";
+import NodeMap from "../components/NodeMap";
 
 function Dashboard() {
   const [measurements, setMeasurements] = useState([]);
@@ -45,14 +46,14 @@ function Dashboard() {
           }
         }
 
-        setLoadingMessage("Despertando servidor y cargando datos...");
+        setLoadingMessage("Conectando con el servidor de mediciones...");
 
         const data = await getAllMeasurementsWithRetry({
           attempts: 6,
           delay: 10000,
           onRetry: (attempt, attempts) => {
             setLoadingMessage(
-              `El servidor está despertando. Reintento ${attempt} de ${attempts}...`
+              `El servidor está iniciando. Reintento ${attempt} de ${attempts}...`
             );
           },
         });
@@ -60,6 +61,7 @@ function Dashboard() {
         const items = data?.items ?? [];
 
         setMeasurements(items);
+        setErrorMessage("");
         setIsUsingCachedData(false);
         localStorage.setItem("latestMeasurements", JSON.stringify(items));
 
@@ -74,10 +76,21 @@ function Dashboard() {
           setSelectedExteriorNode(String(exteriorNodes[0].id_nodo));
         }
       } catch (error) {
-        setErrorMessage(
-          "No se pudieron cargar datos nuevos. Verifica la conexión o intenta nuevamente en unos segundos."
-        );
-        console.error(error);
+        console.error("No se pudieron cargar datos nuevos desde la API:", error);
+
+        setMeasurements((currentMeasurements) => {
+          if (currentMeasurements.length > 0) {
+            setErrorMessage("");
+            setIsUsingCachedData(true);
+            return currentMeasurements;
+          }
+
+          setErrorMessage(
+            "No se pudieron cargar datos nuevos. Verifica la conexión o intenta nuevamente en unos segundos."
+          );
+
+          return currentMeasurements;
+        });
       } finally {
         setLoading(false);
       }
@@ -169,6 +182,8 @@ function Dashboard() {
         onSelectNode={setSelectedExteriorNode}
         measurement={selectedExteriorMeasurement}
       />
+
+      <NodeMap measurements={measurements} />
     </main>
   );
 }

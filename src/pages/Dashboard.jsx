@@ -3,12 +3,9 @@ import { Activity, Gauge, Thermometer, Droplets, Wind } from "lucide-react";
 import { getLatestMeasurement } from "../api/measurements";
 import MetricCard from "../components/MetricCard";
 import {
-  getAQIStatus,
-  getCO2Status,
-  getGenericStatus,
+  getInformativeStatus,
   getPM10Status,
   getPM25Status,
-  getTVOCStatus,
 } from "../utils/airQualityStatus";
 
 function Dashboard() {
@@ -75,7 +72,7 @@ function Dashboard() {
           title="PM1"
           value={latest?.pm1_0}
           unit="µg/m³"
-          status={getGenericStatus(latest?.pm1_0)}
+          status={getInformativeStatus(latest?.pm1_0)}
           icon={<Wind size={20} />}
         />
 
@@ -88,6 +85,14 @@ function Dashboard() {
         />
 
         <MetricCard
+          title="PM4"
+          value={latest?.pm4_0}
+          unit="µg/m³"
+          status={getInformativeStatus(latest?.pm4_0)}
+          icon={<Wind size={20} />}
+        />
+
+        <MetricCard
           title="PM10"
           value={latest?.pm10}
           unit="µg/m³"
@@ -96,10 +101,18 @@ function Dashboard() {
         />
 
         <MetricCard
+          title="Tamaño partícula"
+          value={latest?.tamano_promedio_particula}
+          unit="µm"
+          status={getInformativeStatus(latest?.tamano_promedio_particula)}
+          icon={<Wind size={20} />}
+        />
+
+        <MetricCard
           title="TVOC"
           value={latest?.tvoc}
           unit="ppb"
-          status={getTVOCStatus(latest?.tvoc)}
+          status={getInformativeStatus(latest?.tvoc)}
           icon={<Droplets size={20} />}
         />
 
@@ -107,7 +120,7 @@ function Dashboard() {
           title="CO2"
           value={latest?.co2}
           unit="ppm"
-          status={getCO2Status(latest?.co2)}
+          status={getInformativeStatus(latest?.co2)}
           icon={<Activity size={20} />}
         />
 
@@ -115,7 +128,7 @@ function Dashboard() {
           title="eCO2"
           value={latest?.eco2}
           unit="ppm"
-          status={getCO2Status(latest?.eco2)}
+          status={getInformativeStatus(latest?.eco2)}
           icon={<Activity size={20} />}
         />
 
@@ -123,7 +136,7 @@ function Dashboard() {
           title="Temperatura"
           value={latest?.scd41_temp ?? latest?.bme688_temp}
           unit="°C"
-          status={getGenericStatus(latest?.scd41_temp ?? latest?.bme688_temp)}
+          status={getInformativeStatus(latest?.scd41_temp ?? latest?.bme688_temp)}
           icon={<Thermometer size={20} />}
         />
 
@@ -131,8 +144,8 @@ function Dashboard() {
           title="Humedad"
           value={latest?.scd41_humedad ?? latest?.bme688_humedad}
           unit="%"
-          status={getGenericStatus(
-            latest?.scd41_humedad ?? latest?.bme688_humedad
+          status={getInformativeStatus(
+           latest?.scd41_humedad ?? latest?.bme688_humedad
           )}
           icon={<Droplets size={20} />}
         />
@@ -141,7 +154,7 @@ function Dashboard() {
           title="Presión"
           value={latest?.presion_atmosferica}
           unit="hPa"
-          status={getGenericStatus(latest?.presion_atmosferica)}
+          status={getInformativeStatus(latest?.presion_atmosferica)}
           icon={<Gauge size={20} />}
         />
 
@@ -149,7 +162,7 @@ function Dashboard() {
           title="Gas"
           value={latest?.resistencia_gas}
           unit="kΩ"
-          status={getGenericStatus(latest?.resistencia_gas)}
+          status={getInformativeStatus(latest?.resistencia_gas)}
           icon={<Gauge size={20} />}
         />
 
@@ -157,7 +170,7 @@ function Dashboard() {
           title="AQI"
           value={latest?.aqi}
           unit="índice"
-          status={getAQIStatus(latest?.aqi)}
+          status={getInformativeStatus(latest?.aqi)}
           icon={<Gauge size={20} />}
         />
       </section>

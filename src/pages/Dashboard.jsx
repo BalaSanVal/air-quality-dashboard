@@ -142,11 +142,36 @@ function Dashboard() {
   return (
     <main className="page" id="inicio">
       <section className="hero">
-        <h1>Calidad de Aire UPIITA</h1>
+        <div className="hero__badge">
+          Sistema de monitoreo ambiental
+        </div>
+
+        <h1>Sistema de monitoreo de calidad del aire en UPIITA</h1>
+
         <p>
-          Plataforma de monitoreo ambiental para consultar las mediciones
-          registradas por los nodos instalados en UPIITA.
+          Plataforma web para consultar, visualizar y analizar mediciones ambientales
+          obtenidas mediante nodos instalados en espacios interiores y exteriores
+          de la UPIITA. El sistema integra adquisición de datos, almacenamiento en la
+          nube y visualización mediante tarjetas, mapa georreferenciado y gráficas
+          comparativas.
         </p>
+
+        <div className="hero__highlights">
+          <article>
+            <strong>3</strong>
+            <span>Nodos de medición</span>
+          </article>
+
+          <article>
+            <strong>15</strong>
+            <span>Variables ambientales</span>
+          </article>
+
+          <article>
+            <strong>API REST</strong>
+            <span>Consulta de datos en tiempo real</span>
+          </article>
+        </div>
       </section>
 
       {isUsingCachedData && (
@@ -156,12 +181,24 @@ function Dashboard() {
         </div>
       )}
 
-      <section className="section-header" id="mediciones">
-        <h2>Mediciones de calidad de aire</h2>
-        <p>
-          Consulta las lecturas más recientes por ambiente y por nodo de
-          monitoreo.
-        </p>
+      <section className="measurements-intro-panel" id="mediciones">
+        <div className="measurements-intro-panel__content">
+          <span className="section-header__eyebrow">Lecturas recientes</span>
+          <h2>Mediciones ambientales por nodo</h2>
+          <p>
+            Consulta las variables registradas por cada nodo de monitoreo, organizadas
+            por ambiente interior y exterior. Las concentraciones de PM₂.₅ y PM₁₀ se
+            interpretan con base en la escala cromática del Índice Aire y Salud,
+            mientras que el resto de variables se presenta como información
+            complementaria para el análisis del entorno ambiental.
+          </p>
+
+          <div className="measurements-intro-panel__chips">
+            <span>Ambientes interiores y exteriores</span>
+            <span>Selección por nodo</span>
+            <span>Visualización de datos actuales</span>
+          </div>
+        </div>
       </section>
 
       <MeasurementGroup

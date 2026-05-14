@@ -549,6 +549,8 @@ select {
   border: 1px solid #dbe3ef;
   border-radius: 16px;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  position: relative;
+  overflow: visible;
 }
 
 .metric-card__header {
@@ -796,6 +798,30 @@ select {
 }
 
 @media (max-width: 900px) {
+  .metrics-grid .metric-card:nth-child(n) .metric-card__tooltip {
+    left: 50%;
+    right: auto;
+    width: min(260px, 82vw);
+    transform: translateX(-50%) translateY(6px);
+  }
+
+  .metrics-grid .metric-card:nth-child(n)
+    .metric-card__info-wrapper:hover
+    .metric-card__tooltip,
+  .metrics-grid .metric-card:nth-child(n)
+    .metric-card__info-button:focus
+    + .metric-card__tooltip {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .metrics-grid .metric-card:nth-child(n) .metric-card__tooltip::before {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%) rotate(45deg);
+  }
+}
+
+@media (max-width: 900px) {
   .measurement-group-card {
     padding: 24px 20px;
   }
@@ -966,39 +992,62 @@ select {
 
 .metric-card__tooltip {
   position: absolute;
-  top: 30px;
-  right: 0;
-  z-index: 20;
-  width: 280px;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  z-index: 80;
+  width: min(280px, 80vw);
   padding: 12px 14px;
   color: #ffffff;
   background: #0f172a;
-  border-radius: 10px;
-  font-size: 13px;
-  line-height: 1.5;
-  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.25);
+  border-radius: 12px;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.28);
+  font-size: 12px;
+  line-height: 1.55;
+  text-align: left;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-4px);
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(6px);
+  transition:
+    opacity 0.16s ease,
+    visibility 0.16s ease,
+    transform 0.16s ease;
 }
 
 .metric-card__info-wrapper:hover .metric-card__tooltip,
-.metric-card__info-wrapper:focus-within .metric-card__tooltip {
+.metric-card__info-button:focus + .metric-card__tooltip {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
 }
 
 .metric-card__tooltip::before {
   content: "";
   position: absolute;
-  top: -6px;
-  right: 12px;
+  left: 50%;
+  bottom: -6px;
   width: 12px;
   height: 12px;
   background: #0f172a;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.metrics-grid .metric-card:nth-child(4n + 1) .metric-card__tooltip::before {
+  left: 18px;
   transform: rotate(45deg);
+}
+
+.metrics-grid .metric-card:nth-child(4n) .metric-card__tooltip::before {
+  left: auto;
+  right: 18px;
+  transform: rotate(45deg);
+}
+
+.metric-card__info-wrapper:hover .metric-card__tooltip,
+.metric-card__info-button:focus + .metric-card__tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
 }
 
 @media (max-width: 560px) {

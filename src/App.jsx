@@ -1,12 +1,14 @@
 import Dashboard from "./pages/Dashboard";
-import "./index.css";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import "./index.css";
 
 function App() {
   return (
     <>
       <Navbar />
       <Dashboard />
+      <Footer />
     </>
   );
 }

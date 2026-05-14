@@ -240,7 +240,10 @@ function ChartsAnalysis({ measurements }) {
           </h3>
 
           {filteredMeasurements.length > 0 ? (
-            <Line data={lineChartData} options={getLineChartOptions(metricConfig)} />
+            <Line
+                data={lineChartData}
+                options={getLineChartOptions(metricConfig, selectedPeriod)}
+            />
           ) : (
             <EmptyChartMessage />
           )}
@@ -252,7 +255,10 @@ function ChartsAnalysis({ measurements }) {
           </h3>
 
           {filteredMeasurements.length > 0 ? (
-            <Bar data={barChartData} options={getBarChartOptions(metricConfig)} />
+            <Bar
+                data={barChartData}
+                options={getBarChartOptions(metricConfig, selectedPeriod)}
+            />
           ) : (
             <EmptyChartMessage />
           )}
@@ -433,16 +439,14 @@ function buildComparisonChartData(measurements, selectedMetric) {
 }
 
 function buildLabels(measurements) {
-  const labels = measurements.map((measurement) =>
-    formatChartLabel(measurement.fecha_hora)
-  );
+  const labels = measurements.map((measurement) => measurement.fecha_hora);
 
   return [...new Set(labels)];
 }
 
 function getAverageForLabel(measurements, selectedMetric, label) {
   const values = measurements
-    .filter((measurement) => formatChartLabel(measurement.fecha_hora) === label)
+    .filter((measurement) => measurement.fecha_hora === label)
     .map((measurement) => Number(measurement[selectedMetric]))
     .filter((value) => Number.isFinite(value));
 
@@ -506,19 +510,41 @@ function parseMeasurementDate(value) {
   return date;
 }
 
-function formatChartLabel(value) {
+function formatChartTickLabel(value, selectedPeriod) {
   const date = parseMeasurementDate(value);
 
   if (!date) return "Sin fecha";
 
+  if (selectedPeriod === "24h") {
+    return new Intl.DateTimeFormat("es-MX", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(date);
+  }
+
   return new Intl.DateTimeFormat("es-MX", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
+    day: "2-digit",
+    month: "short",
   }).format(date);
 }
 
-function getLineChartOptions(metricConfig) {
+function formatChartTooltipTitle(value) {
+  const date = parseMeasurementDate(value);
+
+  if (!date) return value ?? "Sin fecha";
+
+  return `${new Intl.DateTimeFormat("es-MX", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date)} h`;
+}
+
+function getLineChartOptions(metricConfig, selectedPeriod) {
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -528,6 +554,10 @@ function getLineChartOptions(metricConfig) {
       },
       tooltip: {
         callbacks: {
+          title: (tooltipItems) => {
+            const label = tooltipItems[0]?.label;
+            return formatChartTooltipTitle(label);
+          },
           label: (context) =>
             `${context.dataset.label}: ${context.raw ?? "—"} ${
               metricConfig?.unit ?? ""
@@ -536,6 +566,16 @@ function getLineChartOptions(metricConfig) {
       },
     },
     scales: {
+      x: {
+        ticks: {
+          maxRotation: selectedPeriod === "24h" ? 45 : 0,
+          minRotation: selectedPeriod === "24h" ? 45 : 0,
+          callback: function (value) {
+            const label = this.getLabelForValue(value);
+            return formatChartTickLabel(label, selectedPeriod);
+          },
+        },
+      },
       y: {
         beginAtZero: true,
         title: {
@@ -547,7 +587,7 @@ function getLineChartOptions(metricConfig) {
   };
 }
 
-function getBarChartOptions(metricConfig) {
+function getBarChartOptions(metricConfig, selectedPeriod) {
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -557,6 +597,10 @@ function getBarChartOptions(metricConfig) {
       },
       tooltip: {
         callbacks: {
+          title: (tooltipItems) => {
+            const label = tooltipItems[0]?.label;
+            return formatChartTooltipTitle(label);
+          },
           label: (context) =>
             `${context.dataset.label}: ${context.raw ?? "—"} ${
               metricConfig?.unit ?? ""
@@ -565,6 +609,16 @@ function getBarChartOptions(metricConfig) {
       },
     },
     scales: {
+      x: {
+        ticks: {
+          maxRotation: selectedPeriod === "24h" ? 45 : 0,
+          minRotation: selectedPeriod === "24h" ? 45 : 0,
+          callback: function (value) {
+            const label = this.getLabelForValue(value);
+            return formatChartTickLabel(label, selectedPeriod);
+          },
+        },
+      },
       y: {
         beginAtZero: true,
         title: {

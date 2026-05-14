@@ -159,16 +159,48 @@ function ChartsAnalysis({ measurements }) {
   }, [filteredMeasurements, selectedMetric]);
 
   return (
-    <section className="charts-section" id="graficos">
-      <div className="section-header">
+  <section className="charts-section charts-section-panel" id="graficos">
+    <div className="charts-section-panel__header">
+      <div className="charts-section-panel__intro">
+        <span className="charts-section-panel__eyebrow">
+          Análisis temporal de mediciones
+        </span>
+
         <h2>Gráficos y análisis</h2>
+
         <p>
-          Visualización de tendencias, comparación por ambiente y estadísticas
-          descriptivas de las mediciones registradas.
+          Consulta la evolución de las variables ambientales registradas por los
+          nodos de monitoreo, compara el comportamiento entre ambientes
+          interiores y exteriores, y revisa estadísticas descriptivas del
+          periodo seleccionado.
         </p>
+
+        <div className="charts-section-panel__chips">
+          <span>Tendencia temporal</span>
+          <span>Comparativa interior/exterior</span>
+          <span>Estadísticas del periodo</span>
+        </div>
       </div>
 
-      <div className="filters-card">
+      <div className="charts-section-panel__summary">
+        <article>
+          <strong>{metricConfig?.label}</strong>
+          <span>Métrica seleccionada</span>
+        </article>
+
+        <article>
+          <strong>{selectedPeriod}</strong>
+          <span>Periodo de análisis</span>
+        </article>
+
+        <article>
+          <strong>{filteredMeasurements.length}</strong>
+          <span>Registros filtrados</span>
+        </article>
+      </div>
+    </div>
+
+    <div className="filters-card">
         <div className="filters-card__title">
           <Filter size={18} />
           <h3>Filtros</h3>

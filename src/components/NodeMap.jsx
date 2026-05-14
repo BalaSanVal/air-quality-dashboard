@@ -1,6 +1,6 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
-import { MapPin } from "lucide-react";
+import { Activity, MapPin, RadioTower } from "lucide-react";
 import { getPM10Status, getPM25Status } from "../utils/airQualityStatus";
 import { formatDateTime } from "../utils/formatDate";
 
@@ -25,13 +25,51 @@ function NodeMap({ measurements }) {
   const latestMeasurementsByNode = getLatestMeasurementsByNode(measurements);
 
   return (
-    <section className="map-section" id="mapa">
-      <div className="section-header">
-        <h2>Mapa de nodos de medición</h2>
-        <p>
-          Ubicación aproximada de los nodos instalados en UPIITA y estado actual
-          de calidad del aire de acuerdo con las mediciones recientes.
-        </p>
+    <section className="map-section map-section-panel" id="mapa">
+      <div className="map-section-panel__header">
+        <div className="map-section-panel__intro">
+          <span className="map-section-panel__eyebrow">
+            Ubicación georreferenciada
+          </span>
+
+          <h2>Mapa de nodos de medición</h2>
+
+          <p>
+            Visualización espacial de los nodos IoT instalados en UPIITA. Cada
+            marcador representa un nodo de monitoreo y su color resume el estado
+            actual de calidad del aire con base en las mediciones recientes de
+            PM₂.₅ y PM₁₀.
+          </p>
+
+          <div className="map-section-panel__chips">
+            <span>
+              <MapPin size={14} />
+              Coordenadas aproximadas
+            </span>
+
+            <span>
+              <Activity size={14} />
+              Estado por color
+            </span>
+
+            <span>
+              <RadioTower size={14} />
+              Nodos IoT activos
+            </span>
+          </div>
+        </div>
+
+        <div className="map-section-panel__summary">
+          <article>
+            <strong>{latestMeasurementsByNode.length}</strong>
+            <span>Nodos activos</span>
+          </article>
+
+          <article>
+            <strong>PM₂.₅ / PM₁₀</strong>
+            <span>Variables de referencia</span>
+          </article>
+        </div>
       </div>
 
       <div className="map-layout">
@@ -68,16 +106,21 @@ function NodeMap({ measurements }) {
                       <small>{formatDateTime(measurement.fecha_hora)} h</small>
 
                       <div className="node-popup__status">
-                        <span className={`metric-card__status ${status.colorClass}`}>
+                        <span
+                          className={`metric-card__status ${status.colorClass}`}
+                        >
                           {status.label}
                         </span>
                       </div>
 
                       <p>
-                        PM2.5: <strong>{measurement.pm2_5 ?? "—"} µg/m³</strong>
+                        PM<sub>2.5</sub>:{" "}
+                        <strong>{measurement.pm2_5 ?? "—"} µg/m³</strong>
                       </p>
+
                       <p>
-                        PM10: <strong>{measurement.pm10 ?? "—"} µg/m³</strong>
+                        PM<sub>10</sub>:{" "}
+                        <strong>{measurement.pm10 ?? "—"} µg/m³</strong>
                       </p>
                     </div>
                   </Popup>
@@ -88,8 +131,16 @@ function NodeMap({ measurements }) {
         </div>
 
         <aside className="map-sidebar">
-          <h3>Nodos activos</h3>
-          <p>Selecciona un marcador en el mapa para ver detalles.</p>
+          <div className="map-sidebar__header">
+            <span className="map-sidebar__icon">
+              <RadioTower size={18} />
+            </span>
+
+            <div>
+              <h3>Nodos activos</h3>
+              <p>Selecciona un marcador en el mapa para consultar detalles.</p>
+            </div>
+          </div>
 
           <div className="node-list">
             {latestMeasurementsByNode.map((measurement) => {
@@ -104,8 +155,8 @@ function NodeMap({ measurements }) {
                     <span>{measurement.ubicacion}</span>
                     <small>
                       {measurement.tipo_nodo === "interior"
-                        ? "Interior"
-                        : "Exterior"}
+                        ? "Ambiente interior"
+                        : "Ambiente exterior"}
                     </small>
                   </div>
 

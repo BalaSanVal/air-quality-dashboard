@@ -58,10 +58,9 @@ function Navbar() {
                 className="navbar__link navbar__dropdown-button"
                 type="button"
                 aria-expanded={isMeasurementsOpen}
-                onClick={() =>
-                    setIsMeasurementsOpen((currentValue) => !currentValue)
-                }
-                >
+                aria-controls="measurements-menu"
+                onClick={() => setIsMeasurementsOpen((currentValue) => !currentValue)}
+            >
                 <Gauge size={18} />
                 <span>Mediciones</span>
                 <ChevronDown
@@ -70,7 +69,12 @@ function Navbar() {
                 />
             </button>
 
-            <div className={`navbar__dropdown-menu ${isMeasurementsOpen ? "navbar__dropdown-menu--open" : ""}`}>
+            <div
+                id="measurements-menu"
+                className={`navbar__dropdown-menu ${
+                    isMeasurementsOpen ? "navbar__dropdown-menu--open" : ""
+                }`}
+            >
               <a href="#mediciones-interiores" onClick={closeMobileMenu}>
                 Mediciones interiores
               </a>

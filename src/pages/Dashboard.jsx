@@ -237,31 +237,55 @@ function MeasurementGroup({
   onSelectNode,
   measurement,
 }) {
-  return (
-    <section className="measurement-group" id={id}>
-      <div className="measurement-group__header">
-        <div>
-          <h3>{title}</h3>
-          <p>{description}</p>
+
+      const environmentClass =
+  String(title).toLowerCase() === "exterior" ? "exterior" : "interior";
+
+return (
+  <section
+    className={`measurement-group measurement-group-card measurement-group-card--${environmentClass}`}
+    id={id}
+  >
+    <div className="measurement-group-card__header">
+      <div className="measurement-group-card__intro">
+        <span className="measurement-group-card__eyebrow">
+          {environmentClass === "interior"
+            ? "Ambiente interior"
+            : "Ambiente exterior"}
+        </span>
+
+        <h3>
+          {environmentClass === "interior"
+            ? "Mediciones en interiores"
+            : "Mediciones en exteriores"}
+        </h3>
+
+        <p>{description}</p>
+
+        <div className="measurement-group-card__meta">
+          <span>{nodes.length} nodo(s) disponible(s)</span>
+          <span>Última lectura por nodo</span>
+          <span>Datos obtenidos desde la API</span>
         </div>
-
-        <label className="node-selector">
-          <span>Seleccionar nodo</span>
-          <select
-            value={selectedNode}
-            onChange={(event) => onSelectNode(event.target.value)}
-            disabled={nodes.length === 0}
-          >
-            {nodes.length === 0 && <option value="">Sin nodos disponibles</option>}
-
-            {nodes.map((node) => (
-              <option key={node.id_nodo} value={node.id_nodo}>
-                {node.nodo} — {node.ubicacion}
-              </option>
-            ))}
-          </select>
-        </label>
       </div>
+
+      <label className="node-selector measurement-group-card__selector">
+        <span>Seleccionar nodo</span>
+        <select
+          value={selectedNode}
+          onChange={(event) => onSelectNode(event.target.value)}
+          disabled={nodes.length === 0}
+        >
+          {nodes.length === 0 && <option value="">Sin nodos disponibles</option>}
+
+          {nodes.map((node) => (
+            <option key={node.id_nodo} value={node.id_nodo}>
+              {node.nodo} — {node.ubicacion}
+            </option>
+          ))}
+        </select>
+      </label>
+    </div>
 
       {measurement ? (
         <>
@@ -406,7 +430,7 @@ function MeasurementGroup({
           No hay mediciones disponibles para esta sección.
         </div>
       )}
-    </section>
+  </section>
   );
 }
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
   Line,
@@ -158,6 +158,22 @@ function ChartsAnalysis({ measurements }) {
     return calculateStatistics(filteredMeasurements, selectedMetric);
   }, [filteredMeasurements, selectedMetric]);
 
+  const [isMobileChart, setIsMobileChart] = useState(false);
+
+  useEffect(() => {
+    function handleResize() {
+      setIsMobileChart(window.innerWidth <= 640);
+    }
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   return (
   <section className="charts-section charts-section-panel" id="graficos">
     <div className="charts-section-panel__header">
@@ -274,7 +290,7 @@ function ChartsAnalysis({ measurements }) {
           {filteredMeasurements.length > 0 ? (
             <Line
                 data={lineChartData}
-                options={getLineChartOptions(metricConfig, selectedPeriod)}
+                options={getLineChartOptions(metricConfig, selectedPeriod, isMobileChart)}
             />
           ) : (
             <EmptyChartMessage />
@@ -289,7 +305,7 @@ function ChartsAnalysis({ measurements }) {
           {filteredMeasurements.length > 0 ? (
             <Bar
                 data={barChartData}
-                options={getBarChartOptions(metricConfig, selectedPeriod)}
+                options={getBarChartOptions(metricConfig, selectedPeriod, isMobileChart)}
             />
           ) : (
             <EmptyChartMessage />
@@ -576,13 +592,27 @@ function formatChartTooltipTitle(value) {
   }).format(date)} h`;
 }
 
-function getLineChartOptions(metricConfig, selectedPeriod) {
+function getLineChartOptions(metricConfig, selectedPeriod, isMobileChart) {
   return {
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: {
+        top: 8,
+        right: isMobileChart ? 4 : 12,
+        bottom: isMobileChart ? 2 : 8,
+        left: isMobileChart ? 2 : 8,
+      },
+    },
     plugins: {
       legend: {
         position: "bottom",
+        labels: {
+          boxWidth: isMobileChart ? 10 : 14,
+          font: {
+            size: isMobileChart ? 10 : 12,
+          },
+        },
       },
       tooltip: {
         callbacks: {
@@ -600,8 +630,19 @@ function getLineChartOptions(metricConfig, selectedPeriod) {
     scales: {
       x: {
         ticks: {
-          maxRotation: selectedPeriod === "24h" ? 45 : 0,
-          minRotation: selectedPeriod === "24h" ? 45 : 0,
+          autoSkip: true,
+          maxTicksLimit: isMobileChart
+            ? selectedPeriod === "24h"
+              ? 4
+              : 5
+            : selectedPeriod === "24h"
+              ? 8
+              : 10,
+          maxRotation: isMobileChart ? 35 : selectedPeriod === "24h" ? 45 : 0,
+          minRotation: isMobileChart ? 35 : selectedPeriod === "24h" ? 45 : 0,
+          font: {
+            size: isMobileChart ? 9 : 11,
+          },
           callback: function (value) {
             const label = this.getLabelForValue(value);
             return formatChartTickLabel(label, selectedPeriod);
@@ -610,22 +651,45 @@ function getLineChartOptions(metricConfig, selectedPeriod) {
       },
       y: {
         beginAtZero: true,
+        ticks: {
+          maxTicksLimit: isMobileChart ? 5 : 6,
+          font: {
+            size: isMobileChart ? 9 : 11,
+          },
+        },
         title: {
           display: true,
           text: metricConfig?.unit ?? "",
+          font: {
+            size: isMobileChart ? 10 : 12,
+          },
         },
       },
     },
   };
 }
 
-function getBarChartOptions(metricConfig, selectedPeriod) {
+function getBarChartOptions(metricConfig, selectedPeriod, isMobileChart) {
   return {
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: {
+        top: 8,
+        right: isMobileChart ? 4 : 12,
+        bottom: isMobileChart ? 2 : 8,
+        left: isMobileChart ? 2 : 8,
+      },
+    },
     plugins: {
       legend: {
         position: "bottom",
+        labels: {
+          boxWidth: isMobileChart ? 10 : 14,
+          font: {
+            size: isMobileChart ? 10 : 12,
+          },
+        },
       },
       tooltip: {
         callbacks: {
@@ -643,8 +707,19 @@ function getBarChartOptions(metricConfig, selectedPeriod) {
     scales: {
       x: {
         ticks: {
-          maxRotation: selectedPeriod === "24h" ? 45 : 0,
-          minRotation: selectedPeriod === "24h" ? 45 : 0,
+          autoSkip: true,
+          maxTicksLimit: isMobileChart
+            ? selectedPeriod === "24h"
+              ? 4
+              : 5
+            : selectedPeriod === "24h"
+              ? 8
+              : 10,
+          maxRotation: isMobileChart ? 35 : selectedPeriod === "24h" ? 45 : 0,
+          minRotation: isMobileChart ? 35 : selectedPeriod === "24h" ? 45 : 0,
+          font: {
+            size: isMobileChart ? 9 : 11,
+          },
           callback: function (value) {
             const label = this.getLabelForValue(value);
             return formatChartTickLabel(label, selectedPeriod);
@@ -653,9 +728,18 @@ function getBarChartOptions(metricConfig, selectedPeriod) {
       },
       y: {
         beginAtZero: true,
+        ticks: {
+          maxTicksLimit: isMobileChart ? 5 : 6,
+          font: {
+            size: isMobileChart ? 9 : 11,
+          },
+        },
         title: {
           display: true,
           text: metricConfig?.unit ?? "",
+          font: {
+            size: isMobileChart ? 10 : 12,
+          },
         },
       },
     },

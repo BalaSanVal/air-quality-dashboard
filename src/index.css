@@ -1333,21 +1333,18 @@ select {
 }
 
 .chart-card {
-  height: 360px;
-  padding: 22px;
-  background: #ffffff;
-  border: 1px solid #dbe3ef;
-  border-radius: 18px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .chart-card h3 {
-  margin: 0 0 16px;
-  font-size: 18px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .chart-card canvas {
-  max-height: 280px;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 .empty-chart-message {
@@ -1434,6 +1431,40 @@ select {
 
   .chart-card {
     height: 340px;
+  }
+}
+
+@media (max-width: 640px) {
+  .charts-section-panel {
+    padding: 20px 12px;
+  }
+
+  .filters-card {
+    padding: 16px 12px;
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .chart-card {
+    height: 330px;
+    padding: 14px 10px 10px;
+    border-radius: 16px;
+  }
+
+  .chart-card h3 {
+    margin-bottom: 8px;
+    font-size: 15px;
+  }
+
+  .chart-card canvas {
+    max-height: 245px;
+  }
+
+  .statistics-card {
+    padding: 16px 12px;
   }
 }
 

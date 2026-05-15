@@ -990,37 +990,6 @@ select {
   outline: none;
 }
 
-.metric-card__tooltip {
-  position: absolute;
-  bottom: calc(100% + 10px);
-  left: 50%;
-  z-index: 80;
-  width: min(280px, 80vw);
-  padding: 12px 14px;
-  color: #ffffff;
-  background: #0f172a;
-  border-radius: 12px;
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.28);
-  font-size: 12px;
-  line-height: 1.55;
-  text-align: left;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translateX(-50%) translateY(6px);
-  transition:
-    opacity 0.16s ease,
-    visibility 0.16s ease,
-    transform 0.16s ease;
-}
-
-.metric-card__info-wrapper:hover .metric-card__tooltip,
-.metric-card__info-button:focus + .metric-card__tooltip {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(0);
-}
-
 .metric-card__tooltip::before {
   content: "";
   position: absolute;
@@ -1041,26 +1010,6 @@ select {
   left: auto;
   right: 18px;
   transform: rotate(45deg);
-}
-
-.metric-card__info-wrapper:hover .metric-card__tooltip,
-.metric-card__info-button:focus + .metric-card__tooltip {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(0);
-}
-
-@media (max-width: 560px) {
-  .metric-card__tooltip {
-    left: auto;
-    right: 0;
-    width: min(260px, 80vw);
-  }
-
-  .metric-card__tooltip::before {
-    left: auto;
-    right: 14px;
-  }
 }
 
 .metric-card__actions {
@@ -2043,5 +1992,56 @@ select {
 
   .charts-section-panel__chips span {
     font-size: 11.5px;
+  }
+}
+
+.metric-card__tooltip-portal {
+  position: fixed;
+  z-index: 20000;
+  padding: 12px 14px;
+  color: #ffffff;
+  background: #0f172a;
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.32);
+  font-size: 12px;
+  line-height: 1.55;
+  text-align: left;
+  pointer-events: none;
+  animation: tooltipFadeIn 0.14s ease both;
+}
+
+.metric-card__tooltip-portal--top {
+  transform: translateY(-100%);
+}
+
+.metric-card__tooltip-portal--bottom {
+  transform: translateY(0);
+}
+
+.metric-card__tooltip-portal::before {
+  content: "";
+  position: absolute;
+  left: var(--tooltip-arrow-left);
+  width: 12px;
+  height: 12px;
+  background: #0f172a;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.metric-card__tooltip-portal--top::before {
+  bottom: -6px;
+}
+
+.metric-card__tooltip-portal--bottom::before {
+  top: -6px;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
   }
 }

@@ -287,14 +287,20 @@ function ChartsAnalysis({ measurements }) {
             Tendencia - {metricConfig?.label} ({metricConfig?.unit})
           </h3>
 
-          {filteredMeasurements.length > 0 ? (
-            <Line
+          <div className="chart-card__canvas">
+            {filteredMeasurements.length > 0 ? (
+              <Line
                 data={lineChartData}
-                options={getLineChartOptions(metricConfig, selectedPeriod, isMobileChart)}
-            />
-          ) : (
-            <EmptyChartMessage />
-          )}
+                options={getLineChartOptions(
+                  metricConfig,
+                  selectedPeriod,
+                  isMobileChart
+                )}
+              />
+            ) : (
+              <EmptyChartMessage />
+            )}
+          </div>
         </article>
 
         <article className="chart-card">
@@ -302,14 +308,20 @@ function ChartsAnalysis({ measurements }) {
             Comparativa - {metricConfig?.label} ({metricConfig?.unit})
           </h3>
 
-          {filteredMeasurements.length > 0 ? (
-            <Bar
+          <div className="chart-card__canvas">
+            {filteredMeasurements.length > 0 ? (
+              <Bar
                 data={barChartData}
-                options={getBarChartOptions(metricConfig, selectedPeriod, isMobileChart)}
-            />
-          ) : (
-            <EmptyChartMessage />
-          )}
+                options={getBarChartOptions(
+                  metricConfig,
+                  selectedPeriod,
+                  isMobileChart
+                )}
+              />
+            ) : (
+              <EmptyChartMessage />
+            )}
+          </div>
         </article>
       </div>
 
@@ -596,6 +608,7 @@ function getLineChartOptions(metricConfig, selectedPeriod, isMobileChart) {
   return {
     responsive: true,
     maintainAspectRatio: false,
+    resizeDelay: 200,
     layout: {
       padding: {
         top: 8,
@@ -673,6 +686,7 @@ function getBarChartOptions(metricConfig, selectedPeriod, isMobileChart) {
   return {
     responsive: true,
     maintainAspectRatio: false,
+    resizeDelay: 200,
     layout: {
       padding: {
         top: 8,

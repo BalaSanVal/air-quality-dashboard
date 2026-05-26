@@ -11,6 +11,7 @@ import { metricInfo } from "../utils/metricInfo";
 import { formatDateTime } from "../utils/formatDate";
 import NodeMap from "../components/NodeMap";
 import ChartsAnalysis from "../components/ChartsAnalysis";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 function Dashboard() {
   const [measurements, setMeasurements] = useState([]);
@@ -140,39 +141,58 @@ function Dashboard() {
   }
 
   return (
-    <main className="page" id="inicio">
-      <section className="hero">
-        <div className="hero__badge">
-          Sistema de monitoreo ambiental
-        </div>
+    <main className="page">
 
-        <h1>Sistema de monitoreo de calidad del aire en UPIITA</h1>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <HomePage />
+          }
+        />
 
-        <p>
-          Plataforma web para consultar, visualizar y analizar mediciones ambientales
-          obtenidas mediante nodos instalados en espacios interiores y exteriores
-          de la UPIITA. El sistema integra adquisición de datos, almacenamiento en la
-          nube y visualización mediante tarjetas, mapa georreferenciado y gráficas
-          comparativas.
-        </p>
+        <Route
+          path="/mediciones/interiores"
+          element={
+            <MeasurementGroup
+              id="mediciones-interiores"
+              title="Interior"
+              description="Mediciones registradas por los puntos de medición instalados en espacios interiores."
+              nodes={interiorNodes}
+              selectedNode={selectedInteriorNode}
+              onSelectNode={setSelectedInteriorNode}
+              measurement={selectedInteriorMeasurement}
+            />
+          }
+        />
 
-        <div className="hero__highlights">
-          <article>
-            <strong>3</strong>
-            <span>Nodos de medición</span>
-          </article>
+        <Route
+          path="/mediciones/exteriores"
+          element={
+            <MeasurementGroup
+              id="mediciones-exteriores"
+              title="Exterior"
+              description="Mediciones registradas por los puntos de medición instalados en espacios exteriores."
+              nodes={exteriorNodes}
+              selectedNode={selectedExteriorNode}
+              onSelectNode={setSelectedExteriorNode}
+              measurement={selectedExteriorMeasurement}
+            />
+          }
+        />
 
-          <article>
-            <strong>15</strong>
-            <span>Variables ambientales</span>
-          </article>
+        <Route
+          path="/mapa"
+          element={<NodeMap measurements={measurements} />}
+        />
 
-          <article>
-            <strong>API REST</strong>
-            <span>Consulta de datos en tiempo real</span>
-          </article>
-        </div>
-      </section>
+        <Route
+          path="/graficas"
+          element={<ChartsAnalysis measurements={measurements} />}
+        />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
 
       {isUsingCachedData && (
         <div className="cached-data-alert">
@@ -181,50 +201,98 @@ function Dashboard() {
         </div>
       )}
 
-      <section className="measurements-intro-panel" id="mediciones">
-        <div className="measurements-intro-panel__content">
-          <span className="section-header__eyebrow">Lecturas recientes</span>
-          <h2>Mediciones ambientales por nodo</h2>
-          <p>
-            Consulta las variables registradas por cada nodo de monitoreo, organizadas
-            por ambiente interior y exterior. Las concentraciones de PM₂.₅ y PM₁₀ se
-            interpretan con base en la escala cromática del Índice Aire y Salud,
-            mientras que el resto de variables se presenta como información
-            complementaria para el análisis del entorno ambiental.
-          </p>
+    </main>
+  );
+}
 
-          <div className="measurements-intro-panel__chips">
-            <span>Ambientes interiores y exteriores</span>
-            <span>Selección por nodo</span>
-            <span>Visualización de datos actuales</span>
-          </div>
+function HomePage() {
+  return (
+    <>
+      <section className="hero">
+        <div className="hero__label">
+          Monitoreo ambiental en tiempo real
+        </div>
+
+        <h1>Sistema de monitoreo de calidad del aire en UPIITA</h1>
+
+        <p>
+          Página web diseñada para consultar de forma clara el estado de la calidad
+          del aire dentro y fuera de la UPIITA. El sistema recopila mediciones
+          ambientales mediante puntos de medición instalados en zonas estratégicas
+          y las presenta en tarjetas, mapa y gráficas para facilitar su interpretación.
+        </p>
+
+        <div className="hero__highlights">
+          <article>
+            <strong>3</strong>
+            <span>Puntos de medición (nodos)</span>
+            <p>
+              Instalados en espacios interiores y exteriores para comparar las
+              condiciones ambientales de distintas zonas.
+            </p>
+          </article>
+
+          <article className="hero__highlight--wide">
+            <strong>15</strong>
+            <span>Variables ambientales</span>
+            <p>
+              Incluyen partículas suspendidas PM1, PM2.5, PM4 y PM10, CO₂, TVOC,
+              temperatura, humedad, presión atmosférica, gas, AQI y otros
+              indicadores generados por los sensores.
+            </p>
+          </article>
         </div>
       </section>
 
-      <MeasurementGroup
-        id="mediciones-interiores"
-        title="Interior"
-        description="Mediciones registradas por los nodos instalados en espacios interiores."
-        nodes={interiorNodes}
-        selectedNode={selectedInteriorNode}
-        onSelectNode={setSelectedInteriorNode}
-        measurement={selectedInteriorMeasurement}
-      />
+      <section className="measurements-intro-panel" id="mediciones">
+        <div className="measurements-intro-panel__content">
+          <span className="section-header__eyebrow">Guía de consulta</span>
 
-      <MeasurementGroup
-        id="mediciones-exteriores"
-        title="Exterior"
-        description="Mediciones registradas por los nodos instalados en espacios exteriores."
-        nodes={exteriorNodes}
-        selectedNode={selectedExteriorNode}
-        onSelectNode={setSelectedExteriorNode}
-        measurement={selectedExteriorMeasurement}
-      />
+          <h2>¿Qué puedes encontrar en esta página?</h2>
 
-      <NodeMap measurements={measurements} />
+          <p>
+            Esta página permite consultar el estado de la calidad del aire en
+            diferentes zonas de la UPIITA mediante puntos de medición, también
+            llamados nodos. Cada punto registra variables ambientales como
+            partículas suspendidas, dióxido de carbono, temperatura, humedad y
+            otros indicadores que ayudan a conocer las condiciones del entorno.
+          </p>
 
-      <ChartsAnalysis measurements={measurements} />
-    </main>
+          <p>
+            La información se presenta mediante tarjetas, gráficas y un mapa para
+            facilitar su interpretación. De esta forma, cualquier usuario puede
+            identificar de manera rápida qué se está midiendo, en qué ubicación se
+            encuentra cada punto de medición y cómo cambian los valores registrados.
+          </p>
+
+          <div className="measurements-intro-panel__info">
+            <article>
+              <strong>Ambientes monitoreados</strong>
+              <span>
+                Se muestran mediciones de espacios interiores y exteriores para
+                comparar las condiciones ambientales de distintas zonas.
+              </span>
+            </article>
+
+            <article>
+              <strong>Puntos de medición</strong>
+              <span>
+                Cada punto de medición corresponde a un nodo instalado en una
+                ubicación específica dentro o alrededor de la unidad.
+              </span>
+            </article>
+
+            <article>
+              <strong>Datos ambientales</strong>
+              <span>
+                Las lecturas actuales permiten revisar variables como PM₂.₅, PM₁₀,
+                CO₂, temperatura, humedad, presión y compuestos orgánicos volátiles.
+              </span>
+            </article>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
 

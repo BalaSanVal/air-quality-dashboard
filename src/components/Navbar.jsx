@@ -8,6 +8,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -20,21 +21,12 @@ function Navbar() {
 
   return (
     <header className="navbar">
-      <nav className="navbar__content" aria-label="Navegación principal">
-        <a
-          className="navbar__brand"
-          href="#inicio"
-          onClick={closeMobileMenu}
-        >
-          Calidad de Aire UPIITA
-        </a>
-
+      <nav className="navbar__container">
         <button
           className="navbar__toggle"
           type="button"
-          aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
-          aria-expanded={isMobileMenuOpen}
           onClick={() => setIsMobileMenuOpen((currentValue) => !currentValue)}
+          aria-label="Abrir menú de navegación"
         >
           {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
@@ -44,59 +36,75 @@ function Navbar() {
             isMobileMenuOpen ? "navbar__links--open" : ""
           }`}
         >
-          <a
-            className="navbar__link navbar__link--active"
-            href="#inicio"
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              isActive ? "navbar__link navbar__link--active" : "navbar__link"
+            }
             onClick={closeMobileMenu}
           >
-            <Home size={18} />
-            <span>Inicio</span>
-          </a>
+            <Home size={17} />
+            Inicio
+          </NavLink>
 
           <div className="navbar__dropdown">
             <button
-                className="navbar__link navbar__dropdown-button"
-                type="button"
-                aria-expanded={isMeasurementsOpen}
-                aria-controls="measurements-menu"
-                onClick={() => setIsMeasurementsOpen((currentValue) => !currentValue)}
+              className="navbar__link navbar__dropdown-button"
+              type="button"
+              onClick={() =>
+                setIsMeasurementsOpen((currentValue) => !currentValue)
+              }
             >
-                <Gauge size={18} />
-                <span>Mediciones</span>
-                <ChevronDown
-                    size={15}
-                    className={isMeasurementsOpen ? "navbar__chevron--open" : ""}
-                />
+              <Gauge size={17} />
+              Mediciones
+              <ChevronDown size={15} />
             </button>
 
             <div
-                id="measurements-menu"
-                className={`navbar__dropdown-menu ${
-                    isMeasurementsOpen ? "navbar__dropdown-menu--open" : ""
-                }`}
+              className={`navbar__dropdown-menu ${
+                isMeasurementsOpen ? "navbar__dropdown-menu--open" : ""
+              }`}
             >
-              <a href="#mediciones-interiores" onClick={closeMobileMenu}>
+              <NavLink
+                to="/mediciones/interiores"
+                className="navbar__dropdown-item"
+                onClick={closeMobileMenu}
+              >
                 Mediciones interiores
-              </a>
-              <a href="#mediciones-exteriores" onClick={closeMobileMenu}>
+              </NavLink>
+
+              <NavLink
+                to="/mediciones/exteriores"
+                className="navbar__dropdown-item"
+                onClick={closeMobileMenu}
+              >
                 Mediciones exteriores
-              </a>
+              </NavLink>
             </div>
           </div>
 
-          <a className="navbar__link" href="#mapa" onClick={closeMobileMenu}>
-            <Map size={18} />
-            <span>Mapa</span>
-          </a>
-
-          <a
-            className="navbar__link"
-            href="#graficos"
+          <NavLink
+            to="/mapa"
+            className={({ isActive }) =>
+              isActive ? "navbar__link navbar__link--active" : "navbar__link"
+            }
             onClick={closeMobileMenu}
           >
-            <BarChart3 size={18} />
-            <span>Gráficos y Análisis</span>
-          </a>
+            <Map size={17} />
+            Mapa
+          </NavLink>
+
+          <NavLink
+            to="/graficas"
+            className={({ isActive }) =>
+              isActive ? "navbar__link navbar__link--active" : "navbar__link"
+            }
+            onClick={closeMobileMenu}
+          >
+            <BarChart3 size={17} />
+            Gráficos y Análisis
+          </NavLink>
         </div>
       </nav>
     </header>

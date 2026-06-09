@@ -81,6 +81,10 @@ function Navbar() {
               >
                 Mediciones exteriores
               </NavLink>
+
+              <NavLink to="/simat" className="navbar__dropdown-item" onClick={closeMobileMenu}>
+                Referencia SIMAT
+              </NavLink>
             </div>
           </div>
 

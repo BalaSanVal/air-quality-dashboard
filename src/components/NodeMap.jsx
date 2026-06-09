@@ -16,12 +16,12 @@ const NODE_COORDINATES = {
     lng: -99.125418,
   },
   3: {
-    lat: 19.511339,
-    lng: -99.127305,
+    lat: 19.511847,
+    lng: -99.127651,
   },
 };
 
-function NodeMap({ measurements }) {
+function NodeMap({ measurements, simatStations = [] }) {
   const latestMeasurementsByNode = getLatestMeasurementsByNode(measurements);
 
   return (
@@ -87,11 +87,11 @@ function NodeMap({ measurements }) {
 
             {latestMeasurementsByNode.map((measurement) => {
               const coordinates = NODE_COORDINATES[measurement.id_nodo];
-
               if (!coordinates) return null;
 
               const status = getNodeAirStatus(measurement);
-              const icon = createNodeIcon(status.colorClass);
+              const nodeLabel = getNodeMapLabel(measurement.id_nodo);
+              const icon = createNodeIcon(status.colorClass, getNodeMapLabel(measurement.id_nodo));
 
               return (
                 <Marker
@@ -123,6 +123,38 @@ function NodeMap({ measurements }) {
                         <strong>{measurement.pm10 ?? "—"} µg/m³</strong>
                       </p>
                     </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
+
+            {simatStations.map((station) => {
+              const lat = Number(station.latitud);
+              const lng = Number(station.longitud);
+
+              if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+
+              return (
+                <Marker
+                  key={`simat-${station.id_estacion}`}
+                  position={[lat, lng]}
+                  icon={createSimatIcon(station.station_code)}
+                >
+                  <Popup>
+                    <strong>{station.station_name}</strong>
+                    <br />
+                    {station.alcaldia ?? "Alcaldía / municipio no disponible"}
+                    <br />
+                    <br />
+                    <strong>Fuente:</strong> SIMAT
+                    <br />
+                    <strong>Registros cargados:</strong>{" "}
+                    {station.total_mediciones ?? "No disponible"}
+                    <br />
+                    <strong>Última lectura:</strong>{" "}
+                    {station.ultima_fecha_hora
+                      ? `${formatDateTime(station.ultima_fecha_hora)} h`
+                      : "No disponible"}
                   </Popup>
                 </Marker>
               );
@@ -204,18 +236,46 @@ function getNodeAirStatus(measurement) {
   return pm25Priority >= pm10Priority ? pm25Status : pm10Status;
 }
 
-function createNodeIcon(colorClass) {
+function createNodeIcon(colorClass, label = "Nodo") {
   return L.divIcon({
     className: "",
     html: `
-      <div class="node-marker ${colorClass}">
-        <div class="node-marker__inner"></div>
+      <div class="node-marker-wrapper">
+        <div class="node-marker ${colorClass}">
+          <div class="node-marker__inner"></div>
+        </div>
+        <span class="node-marker-label">${label}</span>
       </div>
     `,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
+    iconSize: [70, 48],
+    iconAnchor: [35, 14],
     popupAnchor: [0, -14],
   });
+}
+
+function createSimatIcon(label = "SIMAT") {
+  return L.divIcon({
+    className: "",
+    html: `
+      <div class="map-marker-label-wrap">
+        <div class="map-marker map-marker--simat">
+          <div class="map-marker__core"></div>
+        </div>
+        <span class="map-marker-label">${label}</span>
+      </div>
+    `,
+    iconSize: [90, 48],
+    iconAnchor: [45, 16],
+    popupAnchor: [0, -18],
+  });
+}
+
+function getNodeMapLabel(nodeId) {
+  if (Number(nodeId) === 1) return "NI1";
+  if (Number(nodeId) === 2) return "NI2";
+  if (Number(nodeId) === 3) return "NE1";
+
+  return `N${nodeId}`;
 }
 
 export default NodeMap;

@@ -31,6 +31,22 @@ export async function getLatestMeasurement() {
   return response.data;
 }
 
+export async function getLatestSimatMeasurement(stationCode = "GAM") {
+  const response = await apiClient.get("/api/v1/simat/latest", {
+    params: {
+      station_code: stationCode,
+      source: "db",
+    },
+  });
+
+  return response.data;
+}
+
+export async function getAvailableSimatStations() {
+  const response = await apiClient.get("/api/v1/simat/stations");
+  return response.data;
+}
+
 export async function getAllMeasurementsWithRetry({
   attempts = 6,
   delay = 10000,

@@ -289,7 +289,7 @@ select {
 }
 
 .page {
-  width: min(1120px, 92%);
+  width: min(1750px, 94%);
   margin: 0 auto;
   padding: 48px 0;
 }
@@ -555,7 +555,7 @@ select {
 
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -568,6 +568,16 @@ select {
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
   position: relative;
   overflow: visible;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+  border-color: #bfdbfe;
 }
 
 .metric-card__header {
@@ -1244,6 +1254,25 @@ select {
   }
 }
 
+.node-marker-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.node-marker-label {
+  padding: 3px 7px;
+  color: #ffffff;
+  background: rgba(22, 101, 52, 0.86);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.22);
+}
+
 /* Analisis y graficas */
 
 .charts-section {
@@ -1513,7 +1542,7 @@ select {
 }
 
 .site-footer__content {
-  width: min(1120px, 92%);
+  width: min(1600px, 94%);
   margin: 0 auto;
   padding: 44px 0 28px;
 }
@@ -2149,4 +2178,380 @@ select {
     width: 100% !important;
     height: 100% !important;
   }
+}
+
+/* ============================
+   SECCIÓN SIMAT
+============================ */
+
+.measurement-group-card--simat {
+  margin-top: 34px;
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 32%),
+    radial-gradient(circle at bottom left, rgba(37, 99, 235, 0.08), transparent 30%),
+    #ffffff;
+}
+
+.measurement-group-card--simat::before {
+  background: #0ea5e9;
+}
+
+.measurement-group-card--simat .measurement-group-card__eyebrow {
+  color: #0369a1;
+  background: #e0f2fe;
+  border-color: #bae6fd;
+}
+
+.simat-section {
+  position: relative;
+}
+
+.simat-header {
+  grid-template-columns: 1fr;
+  margin-bottom: 24px;
+}
+
+.simat-summary {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0 0 22px;
+}
+
+.simat-summary div {
+  padding: 18px 20px;
+  background: rgba(248, 250, 252, 0.92);
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.simat-summary span {
+  display: block;
+  margin-bottom: 7px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.simat-summary strong {
+  display: block;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.simat-grid {
+  position: relative;
+  z-index: 1;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.simat-section .empty-message {
+  position: relative;
+  z-index: 1;
+  margin: 18px 0 0;
+  padding: 18px 20px;
+  color: #475569;
+  background: rgba(248, 250, 252, 0.9);
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+  font-weight: 700;
+}
+
+/* ============================
+   RESPONSIVE SIMAT
+============================ */
+
+@media (max-width: 1200px) {
+  .simat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .simat-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .simat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .measurement-group-card--simat {
+    padding: 22px 16px;
+    border-radius: 20px;
+  }
+
+  .simat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .simat-summary div {
+    padding: 16px;
+  }
+
+  .simat-summary strong {
+    font-size: 15px;
+  }
+}
+
+.simat-selector {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 280px;
+  max-width: 420px;
+  width: 100%;
+}
+
+.simat-selector span {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.simat-selector select {
+  width: 100%;
+  padding: 13px 44px 13px 16px;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.simat-selector select:hover {
+  border-color: #38bdf8;
+  box-shadow: 0 14px 28px rgba(14, 165, 233, 0.12);
+}
+
+.simat-selector select:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.18);
+}
+
+.simat-selector select:disabled {
+  color: #94a3b8;
+  background: #f8fafc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@media (min-width: 900px) {
+  .simat-header {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+}
+
+@media (max-width: 900px) {
+  .simat-selector {
+    max-width: 100%;
+  }
+}
+
+/* ============================
+   COMPARACIÓN SIMAT VS NODO
+============================ */
+
+.simat-comparison {
+  margin-top: 28px;
+  padding: 24px;
+  background: rgba(248, 250, 252, 0.92);
+  border: 1px solid #dbeafe;
+  border-radius: 22px;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.05);
+}
+
+.simat-comparison__header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 22px;
+  align-items: end;
+  margin-bottom: 22px;
+}
+
+.simat-comparison__header h4 {
+  margin: 10px 0 8px;
+  color: #0f172a;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.simat-comparison__header p {
+  max-width: 760px;
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.comparison-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.comparison-panel {
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.comparison-panel > span {
+  display: inline-flex;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  color: #0369a1;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.comparison-panel h5 {
+  margin: 0 0 16px;
+  color: #0f172a;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.comparison-panel--difference {
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  border-color: #bfdbfe;
+}
+
+.comparison-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.comparison-row span {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.comparison-row strong {
+  color: #0f172a;
+  font-size: 18px;
+}
+
+.comparison-row small {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 1000px) {
+  .simat-comparison__header {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.map-marker--simat {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  background: rgba(14, 165, 233, 0.18);
+  border: 3px solid #0284c7;
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px rgba(14, 165, 233, 0.14);
+}
+
+.map-marker--simat .map-marker__core {
+  width: 10px;
+  height: 10px;
+  background: #0284c7;
+  border-radius: 50%;
+}
+
+.map-marker-label--node {
+  padding: 3px 7px;
+  color: #ffffff;
+  background: rgba(22, 101, 52, 0.86);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.map-marker-label {
+  padding: 3px 7px;
+  color: #ffffff;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.22);
+}
+
+.map-marker-label--node {
+  background: rgba(22, 101, 52, 0.86);
+}
+
+.map-label-anchor {
+  position: relative;
+  width: 90px;
+  height: 54px;
+  pointer-events: auto;
+}
+
+.map-label-anchor > .map-marker {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.map-label-anchor > .map-marker-label {
+  position: absolute;
+  top: 31px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.map-marker-label--node {
+  padding: 3px 7px;
+  color: #ffffff;
+  background: rgba(22, 101, 52, 0.86);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
 }

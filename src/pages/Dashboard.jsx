@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Activity, Gauge, Thermometer, Droplets, Wind, Ruler } from "lucide-react";
-import { getAllMeasurementsWithRetry } from "../api/measurements";
+import {
+  getAllMeasurementsWithRetry,
+  getLatestSimatMeasurement,
+  getAvailableSimatStations,
+} from "../api/measurements";
 import MetricCard from "../components/MetricCard";
 import {
   getInformativeStatus,
@@ -17,10 +21,17 @@ function Dashboard() {
   const [measurements, setMeasurements] = useState([]);
   const [selectedInteriorNode, setSelectedInteriorNode] = useState("");
   const [selectedExteriorNode, setSelectedExteriorNode] = useState("");
+  const [selectedComparisonNode, setSelectedComparisonNode] = useState("");
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [loadingMessage, setLoadingMessage] = useState("Cargando datos...");
   const [isUsingCachedData, setIsUsingCachedData] = useState(false);
+  const [simatStations, setSimatStations] = useState([]);
+  const [selectedSimatStation, setSelectedSimatStation] = useState("");
+  const [simatMeasurement, setSimatMeasurement] = useState(null);
+  const [simatLoading, setSimatLoading] = useState(true);
+  const [simatStationsLoading, setSimatStationsLoading] = useState(true);
+  const [simatError, setSimatError] = useState("");
 
   useEffect(() => {
     async function loadMeasurements() {
@@ -101,6 +112,59 @@ function Dashboard() {
     loadMeasurements();
   }, []);
 
+  useEffect(() => {
+  async function loadSimatStations() {
+    try {
+      setSimatStationsLoading(true);
+
+      const data = await getAvailableSimatStations();
+      const items = data?.items ?? [];
+
+      setSimatStations(items);
+
+      if (items.length > 0) {
+        setSelectedSimatStation(items[0].station_code);
+      }
+
+      setSimatError("");
+    } catch (error) {
+      console.error("No se pudieron cargar las estaciones SIMAT:", error);
+      setSimatError("No se pudieron cargar las estaciones disponibles del SIMAT.");
+    } finally {
+      setSimatStationsLoading(false);
+    }
+  }
+
+  loadSimatStations();
+}, []);
+
+useEffect(() => {
+  if (!selectedSimatStation) {
+    setSimatMeasurement(null);
+    setSimatLoading(false);
+    return;
+  }
+
+  async function loadSimatMeasurement() {
+    try {
+      setSimatLoading(true);
+
+      const data = await getLatestSimatMeasurement(selectedSimatStation);
+
+      setSimatMeasurement(data);
+      setSimatError("");
+    } catch (error) {
+      console.error("No se pudo cargar la medición SIMAT:", error);
+      setSimatMeasurement(null);
+      setSimatError("No se pudo cargar la última lectura disponible del SIMAT.");
+    } finally {
+      setSimatLoading(false);
+    }
+  }
+
+  loadSimatMeasurement();
+}, [selectedSimatStation]);
+
   const interiorNodes = useMemo(
     () => getUniqueNodesByType(measurements, "interior"),
     [measurements]
@@ -110,6 +174,20 @@ function Dashboard() {
     () => getUniqueNodesByType(measurements, "exterior"),
     [measurements]
   );
+
+  const comparisonNodes = useMemo(() => {
+    return [...interiorNodes, ...exteriorNodes];
+  }, [interiorNodes, exteriorNodes]);
+
+  const selectedComparisonMeasurement = useMemo(() => {
+  return getLatestMeasurementByNode(measurements, selectedComparisonNode);
+  }, [measurements, selectedComparisonNode]);
+
+  useEffect(() => {
+    if (!selectedComparisonNode && comparisonNodes.length > 0) {
+      setSelectedComparisonNode(comparisonNodes[0].id_nodo);
+    }
+  }, [comparisonNodes, selectedComparisonNode]);
 
   const selectedInteriorMeasurement = useMemo(
     () => getLatestMeasurementByNode(measurements, selectedInteriorNode),
@@ -182,8 +260,32 @@ function Dashboard() {
         />
 
         <Route
+          path="/simat"
+          element={
+            <SimatSection
+              stations={simatStations}
+              selectedStation={selectedSimatStation}
+              onSelectStation={setSelectedSimatStation}
+              measurement={simatMeasurement}
+              loading={simatLoading}
+              stationsLoading={simatStationsLoading}
+              error={simatError}
+              comparisonNodes={comparisonNodes}
+              selectedComparisonNode={selectedComparisonNode}
+              onSelectComparisonNode={setSelectedComparisonNode}
+              comparisonMeasurement={selectedComparisonMeasurement}
+            />
+          }
+        />
+
+        <Route
           path="/mapa"
-          element={<NodeMap measurements={measurements} />}
+          element={
+            <NodeMap
+              measurements={measurements}
+              simatStations={simatStations}
+            />
+          }
         />
 
         <Route
@@ -233,11 +335,12 @@ function HomePage() {
           </article>
 
           <article className="hero__highlight--wide">
-            <strong>15</strong>
+            <strong>13</strong>
             <span>Variables ambientales</span>
             <p>
-              Incluyen partículas suspendidas PM1, PM2.5, PM4 y PM10, CO₂, TVOC,
-              temperatura, humedad, presión atmosférica, gas, AQI y otros
+              Incluyen partículas suspendidas PM<sub>1</sub>, PM<sub>2.5</sub>, PM<sub>4</sub> y PM<sub>10</sub>, tamaño promedio de particula, 
+              Dióxido de carbono CO<sub>2</sub>, Compuestos orgánicos volátiles totales TVOC, Dióxido de carbono equivalente eCO<sub>2</sub>,
+              temperatura ambiente, humedad relativa, presión atmosférica, resistencia de gas e Índice de calidad de aire AQI.
               indicadores generados por los sensores.
             </p>
           </article>
@@ -260,7 +363,9 @@ function HomePage() {
 
           <p>
             La información se presenta mediante tarjetas, gráficas y un mapa para
-            facilitar su interpretación. De esta forma, cualquier usuario puede
+            facilitar su interpretación, incluyendo comparaciones con estaciones oficiales 
+            como lo son las estaciones de monitoreo ambiental del <a href="https://www.aire.cdmx.gob.mx/default.php" target="_blank">SIMAT</a>. 
+            De esta forma, cualquier usuario puede
             identificar de manera rápida qué se está midiendo, en qué ubicación se
             encuentra cada punto de medición y cómo cambian los valores registrados.
           </p>
@@ -269,7 +374,7 @@ function HomePage() {
             <article>
               <strong>Ambientes monitoreados</strong>
               <span>
-                Se muestran mediciones de espacios interiores y exteriores para
+                Se muestran mediciones de espacios interiores y exteriores a nivel de calle para
                 comparar las condiciones ambientales de distintas zonas.
               </span>
             </article>
@@ -285,8 +390,8 @@ function HomePage() {
             <article>
               <strong>Datos ambientales</strong>
               <span>
-                Las lecturas actuales permiten revisar variables como PM₂.₅, PM₁₀,
-                CO₂, temperatura, humedad, presión y compuestos orgánicos volátiles.
+                Las lecturas actuales permiten revisar variables como PM<sub>2.5</sub>, PM<sub>10</sub>,
+                CO<sub>2</sub>, temperatura, humedad, presión y compuestos orgánicos volátiles.
               </span>
             </article>
           </div>
@@ -502,6 +607,362 @@ return (
   );
 }
 
+function SimatSection({
+  stations,
+  selectedStation,
+  onSelectStation,
+  measurement,
+  loading,
+  stationsLoading,
+  error,
+  comparisonNodes,
+  selectedComparisonNode,
+  onSelectComparisonNode,
+  comparisonMeasurement,
+}) {
+  const selectedStationInfo =
+    stations.find((station) => station.station_code === selectedStation) ?? null;
+
+  const stationName =
+    measurement?.estacion ??
+    selectedStationInfo?.station_name ??
+    "Estación SIMAT";
+
+  return (
+    <section className="measurement-group-card measurement-group-card--simat simat-section">
+      <div className="measurement-group-card__header simat-header">
+        <div className="measurement-group-card__intro">
+          <span className="measurement-group-card__eyebrow">
+            Fuente oficial de referencia
+          </span>
+
+          <h3>Últimas lecturas disponibles del SIMAT</h3>
+
+          <p>
+            Consulta contextual de estaciones oficiales del SIMAT. Estos datos
+            se muestran como referencia oficial disponible y no como validación
+            metrológica directa de los nodos IoT.
+          </p>
+
+          <div className="measurement-group-card__meta">
+            <span>{stations.length} estación(es) disponible(s)</span>
+            <span>Referencia contextual</span>
+            <span>No tiempo real</span>
+          </div>
+        </div>
+
+        <label className="simat-selector">
+          <span>Seleccionar estación SIMAT</span>
+
+          <select
+            value={selectedStation}
+            onChange={(event) => onSelectStation(event.target.value)}
+            disabled={stationsLoading || stations.length === 0}
+          >
+            {stations.length === 0 && (
+              <option value="">Sin estaciones disponibles</option>
+            )}
+
+            {stations.map((station) => (
+              <option
+                key={station.id_estacion}
+                value={station.station_code}
+              >
+                {station.station_code} — {station.station_name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {stationsLoading && (
+        <p className="empty-message">
+          Cargando estaciones disponibles del SIMAT...
+        </p>
+      )}
+
+      {!stationsLoading && loading && (
+        <p className="empty-message">
+          Cargando última lectura disponible del SIMAT...
+        </p>
+      )}
+
+      {!stationsLoading && !loading && error && (
+        <p className="empty-message">{error}</p>
+      )}
+
+      {!stationsLoading && !loading && !error && measurement && (
+        <>
+          <div className="simat-summary">
+            <div>
+              <span>Estación</span>
+              <strong>{stationName}</strong>
+            </div>
+
+            <div>
+              <span>Fecha y hora</span>
+              <strong>{formatDateTime(measurement.fecha_hora)} h</strong>
+            </div>
+
+            <div>
+              <span>Alcaldía / municipio</span>
+              <strong>{measurement.alcaldia ?? selectedStationInfo?.alcaldia ?? "No disponible"}</strong>
+            </div>
+
+            <div>
+              <span>Total de registros cargados</span>
+              <strong>{selectedStationInfo?.total_mediciones ?? "No disponible"}</strong>
+            </div>
+          </div>
+
+          <section className="metrics-grid simat-grid">
+            <MetricCard
+              title="PM₁₀"
+              value={measurement.pm10}
+              unit="µg/m³"
+              status={getPM10Status(measurement.pm10)}
+              icon={<Activity />}
+              info="Material particulado con diámetro menor o igual a 10 micrómetros reportado por SIMAT."
+            />
+
+            <MetricCard
+              title="PM₂.₅"
+              value={measurement.pm2_5}
+              unit="µg/m³"
+              status={getPM25Status(measurement.pm2_5)}
+              icon={<Activity />}
+              info="Material particulado fino con diámetro menor o igual a 2.5 micrómetros reportado por SIMAT."
+            />
+
+            <MetricCard
+              title="PMCO"
+              value={measurement.pmco}
+              unit="µg/m³"
+              status={getInformativeStatus(measurement.pmco)}
+              icon={<Activity />}
+              info="Fracción gruesa de material particulado reportada por SIMAT."
+            />
+
+            <MetricCard
+              title="O₃"
+              value={measurement.o3}
+              unit="ppb"
+              status={getInformativeStatus(measurement.o3)}
+              icon={<Wind />}
+              info="Ozono reportado por la estación oficial SIMAT."
+            />
+
+            <MetricCard
+              title="NO₂"
+              value={measurement.no2}
+              unit="ppb"
+              status={getInformativeStatus(measurement.no2)}
+              icon={<Wind />}
+              info="Dióxido de nitrógeno reportado por la estación oficial SIMAT."
+            />
+
+            <MetricCard
+              title="NOX"
+              value={measurement.nox}
+              unit="ppb"
+              status={getInformativeStatus(measurement.nox)}
+              icon={<Wind />}
+              info="Óxidos de nitrógeno reportados por la estación oficial SIMAT."
+            />
+
+            <MetricCard
+              title="NO"
+              value={measurement.no}
+              unit="ppb"
+              status={getInformativeStatus(measurement.no)}
+              icon={<Wind />}
+              info="Óxido nítrico reportado por la estación oficial SIMAT."
+            />
+
+            <MetricCard
+              title="CO"
+              value={measurement.co}
+              unit="ppm"
+              status={getInformativeStatus(measurement.co)}
+              icon={<Gauge />}
+              info="Monóxido de carbono reportado por la estación oficial SIMAT."
+            />
+
+            <MetricCard
+              title="SO₂"
+              value={measurement.so2}
+              unit="ppb"
+              status={getInformativeStatus(measurement.so2)}
+              icon={<Wind />}
+              info="Dióxido de azufre reportado por la estación oficial SIMAT."
+            />
+          </section>
+          <SimatComparisonBlock
+            simatMeasurement={measurement}
+            nodes={comparisonNodes}
+            selectedNode={selectedComparisonNode}
+            onSelectNode={onSelectComparisonNode}
+            nodeMeasurement={comparisonMeasurement}
+          />
+        </>
+      )}
+
+      {!stationsLoading && !loading && !error && !measurement && (
+        <p className="empty-message">
+          No hay lectura SIMAT disponible para la estación seleccionada.
+        </p>
+      )}
+    </section>
+  );
+}
+
+function SimatComparisonBlock({
+  simatMeasurement,
+  nodes,
+  selectedNode,
+  onSelectNode,
+  nodeMeasurement,
+}) {
+  const selectedNodeInfo =
+    nodes.find((node) => String(node.id_nodo) === String(selectedNode)) ?? null;
+
+  const nodeName = selectedNodeInfo
+    ? getNodeDisplayName(selectedNodeInfo)
+    : `Nodo ${selectedNode}`;
+
+  const pm25Difference = calculateDifference(
+    nodeMeasurement?.pm2_5,
+    simatMeasurement?.pm2_5
+  );
+
+  const pm10Difference = calculateDifference(
+    nodeMeasurement?.pm10,
+    simatMeasurement?.pm10
+  );
+
+  return (
+    <section className="simat-comparison">
+      <div className="simat-comparison__header">
+        <div>
+          <span className="measurement-group-card__eyebrow">
+            Comparación contextual
+          </span>
+
+          <h4>Comparación SIMAT vs nodo seleccionado</h4>
+
+          <p>
+            Comparación directa únicamente para PM₂.₅ y PM₁₀, ya que son las
+            variables presentes tanto en SIMAT como en los nodos del sistema.
+          </p>
+        </div>
+
+        <label className="simat-selector">
+          <span>Seleccionar nodo propio</span>
+
+          <select
+            value={selectedNode}
+            onChange={(event) => onSelectNode(event.target.value)}
+            disabled={nodes.length === 0}
+          >
+            {nodes.length === 0 && (
+              <option value="">Sin nodos disponibles</option>
+            )}
+
+            {nodes.map((node) => (
+              <option key={node.id_nodo} value={node.id_nodo}>
+                {getNodeDisplayName(node)}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div className="comparison-columns">
+        <div className="comparison-panel">
+          <span>SIMAT</span>
+          <h5>Estación oficial seleccionada</h5>
+
+          <ComparisonRow
+            label="PM₂.₅"
+            value={simatMeasurement?.pm2_5}
+            unit="µg/m³"
+          />
+
+          <ComparisonRow
+            label="PM₁₀"
+            value={simatMeasurement?.pm10}
+            unit="µg/m³"
+          />
+        </div>
+
+        <div className="comparison-panel">
+          <span>Nodo propio</span>
+          <h5>{nodeName}</h5>
+
+          <ComparisonRow
+            label="PM₂.₅"
+            value={nodeMeasurement?.pm2_5}
+            unit="µg/m³"
+          />
+
+          <ComparisonRow
+            label="PM₁₀"
+            value={nodeMeasurement?.pm10}
+            unit="µg/m³"
+          />
+        </div>
+
+        <div className="comparison-panel comparison-panel--difference">
+          <span>Diferencia</span>
+          <h5>Nodo - SIMAT</h5>
+
+          <ComparisonRow
+            label="PM₂.₅"
+            value={pm25Difference}
+            unit="µg/m³"
+            showSign
+          />
+
+          <ComparisonRow
+            label="PM₁₀"
+            value={pm10Difference}
+            unit="µg/m³"
+            showSign
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ComparisonRow({ label, value, unit, showSign = false }) {
+  const hasValue = value !== null && value !== undefined && !Number.isNaN(value);
+  const formattedValue = hasValue
+    ? `${showSign && value > 0 ? "+" : ""}${Number(value).toFixed(2)}`
+    : "—";
+
+  return (
+    <div className="comparison-row">
+      <span>{label}</span>
+      <strong>
+        {formattedValue}
+        {hasValue && <small> {unit}</small>}
+      </strong>
+    </div>
+  );
+}
+
+function calculateDifference(nodeValue, simatValue) {
+  const nodeNumber = Number(nodeValue);
+  const simatNumber = Number(simatValue);
+
+  if (Number.isNaN(nodeNumber) || Number.isNaN(simatNumber)) {
+    return null;
+  }
+
+  return nodeNumber - simatNumber;
+}
+
 function getUniqueNodesByType(measurements, type) {
   const normalizedType = type.toLowerCase();
   const nodesMap = new Map();
@@ -527,6 +988,14 @@ function getLatestMeasurementByNode(measurements, nodeId) {
   return (
     measurements.find((item) => String(item.id_nodo) === String(nodeId)) ?? null
   );
+}
+
+function getNodeDisplayName(node) {
+  if (Number(node.id_nodo) === 1) return "Nodo interior 1";
+  if (Number(node.id_nodo) === 2) return "Nodo interior 2";
+  if (Number(node.id_nodo) === 3) return "Nodo exterior 1";
+
+  return node.nombre ?? node.ubicacion ?? `Nodo ${node.id_nodo}`;
 }
 
 export default Dashboard;

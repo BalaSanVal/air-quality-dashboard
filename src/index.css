@@ -2555,3 +2555,173 @@ select {
   line-height: 1;
   white-space: nowrap;
 }
+
+.simat-analysis-card .chart-card__header p {
+  max-width: 760px;
+  margin: 6px 0 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+@media (max-width: 700px) {
+  .simat-comparison-chart {
+    height: 360px;
+    min-height: 360px;
+  }
+
+  .simat-comparison-chart canvas {
+    max-height: 360px !important;
+  }
+}
+
+.chart-card__canvas--large {
+  min-height: 460px;
+}
+
+.simat-comparison-chart {
+  height: 480px;
+  min-height: 480px;
+  width: 100%;
+}
+
+.simat-analysis-card {
+  margin-top: 28px;
+  padding: 28px;
+}
+
+@media (max-width: 700px) {
+  .chart-card__canvas--large,
+  .simat-comparison-chart {
+    height: 340px;
+    min-height: 340px;
+  }
+}
+
+.simat-comparison-chart canvas {
+  max-height: 480px !important;
+}
+
+/* ============================
+   GRÁFICA SIMAT VS NODOS
+============================ */
+
+.simat-analysis-card {
+  height: auto;
+  min-height: 620px;
+  margin-top: 28px;
+  padding: 28px;
+  overflow: visible;
+}
+
+.simat-analysis-card .chart-card__canvas {
+  height: 480px;
+  max-height: none;
+  overflow: visible;
+}
+
+.simat-analysis-card .empty-chart-message {
+  height: 360px;
+}
+
+@media (max-width: 700px) {
+  .simat-analysis-card {
+    min-height: 520px;
+    padding: 20px;
+  }
+
+  .simat-analysis-card .chart-card__canvas {
+    height: 360px;
+  }
+}
+
+.simat-monthly-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.simat-analysis-card {
+  height: auto;
+  min-height: 980px;
+  overflow: visible;
+}
+
+.simat-analysis-card .chart-card__canvas {
+  height: 400px;
+  max-height: none;
+  overflow: visible;
+}
+
+
+@media (max-width: 700px) {
+  .simat-analysis-card {
+    min-height: 780px;
+  }
+
+  .simat-analysis-card .chart-card__canvas,
+  .simat-analysis-card .chart-card__canvas canvas {
+    height: 320px !important;
+  }
+}
+
+.simat-analysis-card {
+  height: auto;
+  min-height: auto;
+  margin-top: 28px;
+  padding: 28px;
+  overflow: visible;
+}
+
+.simat-analysis-card__header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 22px;
+  align-items: end;
+  margin-bottom: 24px;
+}
+
+.simat-metric-control {
+  min-width: 240px;
+}
+
+.simat-monthly-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.simat-monthly-chart-card {
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #dbe3ef;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.simat-monthly-chart-card h4 {
+  margin: 0 0 16px;
+  color: #0f172a;
+  font-size: 18px;
+}
+
+.simat-comparison-chart {
+  height: 390px;
+  max-height: none;
+  overflow: visible;
+}
+
+@media (max-width: 900px) {
+  .simat-analysis-card__header {
+    grid-template-columns: 1fr;
+  }
+
+  .simat-metric-control {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .simat-comparison-chart {
+    height: 320px;
+  }
+}

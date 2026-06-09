@@ -47,6 +47,17 @@ export async function getAvailableSimatStations() {
   return response.data;
 }
 
+export async function getSimatHistory(stationCode = "GAM", limit = 200) {
+  const response = await apiClient.get("/api/v1/simat/history", {
+    params: {
+      station_code: stationCode,
+      limit,
+    },
+  });
+
+  return response.data;
+}
+
 export async function getAllMeasurementsWithRetry({
   attempts = 6,
   delay = 10000,

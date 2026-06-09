@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { getSimatHistory } from "../api/measurements";
 import {
   Bar,
   Line,
@@ -132,6 +133,10 @@ function ChartsAnalysis({ measurements }) {
   const [selectedMetric, setSelectedMetric] = useState("pm2_5");
   const [selectedLocation, setSelectedLocation] = useState("all");
   const [selectedPeriod, setSelectedPeriod] = useState("24h");
+  const [simatHistory, setSimatHistory] = useState([]);
+  const [simatHistoryLoading, setSimatHistoryLoading] = useState(true);
+  const [simatHistoryError, setSimatHistoryError] = useState("");
+  const [selectedSimatMetric, setSelectedSimatMetric] = useState("pm2_5");
 
   const metricConfig = METRIC_OPTIONS.find(
     (metric) => metric.key === selectedMetric
@@ -158,6 +163,17 @@ function ChartsAnalysis({ measurements }) {
     return calculateStatistics(filteredMeasurements, selectedMetric);
   }, [filteredMeasurements, selectedMetric]);
 
+  const simatMonthlyData = useMemo(() => {
+    return buildSimatMonthlyChartData(simatHistory, selectedSimatMetric);
+  }, [simatHistory, selectedSimatMetric]);
+
+  const nodeMonthlyData = useMemo(() => {
+    return buildNodeMonthlyChartData(measurements, selectedSimatMetric);
+  }, [measurements, selectedSimatMetric]);
+
+  const simatMetricLabel =
+    selectedSimatMetric === "pm2_5" ? "PM₂.₅" : "PM₁₀";
+
   const [isMobileChart, setIsMobileChart] = useState(false);
 
   useEffect(() => {
@@ -172,6 +188,26 @@ function ChartsAnalysis({ measurements }) {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
+  }, []);
+
+  useEffect(() => {
+    async function loadSimatHistory() {
+      try {
+        setSimatHistoryLoading(true);
+
+        const data = await getSimatHistory("GAM", 200);
+
+        setSimatHistory(data?.items ?? []);
+        setSimatHistoryError("");
+      } catch (error) {
+        console.error("No se pudo cargar el historial SIMAT:", error);
+        setSimatHistoryError("No se pudo cargar el historial de SIMAT.");
+      } finally {
+        setSimatHistoryLoading(false);
+      }
+    }
+
+    loadSimatHistory();
   }, []);
 
   return (
@@ -354,16 +390,84 @@ function ChartsAnalysis({ measurements }) {
           />
         </div>
       </article>
+
+          
+    <section className="chart-card simat-analysis-card">
+      <div className="chart-card__header simat-analysis-card__header">
+        <div>
+          <span className="chart-card__eyebrow">Comparación oficial</span>
+          <h3>Último mes guardado: SIMAT GAM vs nodos UPIITA</h3>
+          <p>
+            Comparación contextual del último mes almacenado. Cada gráfica conserva
+            sus fechas reales de registro, sin promedios ni aproximaciones
+            temporales.
+          </p>
+        </div>
+
+        <label className="filter-control simat-metric-control">
+          <span>
+            <BarChart3 size={15} />
+            Variable a comparar
+          </span>
+
+          <select
+            value={selectedSimatMetric}
+            onChange={(event) => setSelectedSimatMetric(event.target.value)}
+          >
+            <option value="pm2_5">PM₂.₅</option>
+            <option value="pm10">PM₁₀</option>
+          </select>
+        </label>
+      </div>
+
+      {simatHistoryLoading ? (
+        <EmptyChartMessage message="Cargando historial SIMAT..." />
+      ) : simatHistoryError ? (
+        <EmptyChartMessage message={simatHistoryError} />
+      ) : simatHistory.length > 0 ? (
+        <div className="simat-monthly-grid">
+          <article className="simat-monthly-chart-card">
+            <h4>SIMAT GAM - {simatMetricLabel}</h4>
+
+            <div className="chart-card__canvas simat-comparison-chart">
+              <Line
+                key={`simat-${selectedSimatMetric}`}
+                data={simatMonthlyData}
+                options={getSimatComparisonChartOptions(
+                  isMobileChart,
+                  simatMetricLabel
+                )}
+              />
+            </div>
+          </article>
+
+          <article className="simat-monthly-chart-card">
+            <h4>Nodos UPIITA - {simatMetricLabel}</h4>
+
+            <div className="chart-card__canvas simat-comparison-chart">
+              <Line
+                key={`nodes-${selectedSimatMetric}`}
+                data={nodeMonthlyData}
+                options={getSimatComparisonChartOptions(
+                  isMobileChart,
+                  simatMetricLabel
+                )}
+              />
+            </div>
+          </article>
+        </div>
+      ) : (
+        <EmptyChartMessage message="No hay historial SIMAT disponible." />
+      )}
+    </section>
     </section>
   );
 }
 
-function EmptyChartMessage() {
-  return (
-    <div className="empty-chart-message">
-      No hay datos disponibles para los filtros seleccionados.
-    </div>
-  );
+function EmptyChartMessage({
+  message = "No hay datos disponibles para los filtros seleccionados.",
+}) {
+  return <div className="empty-chart-message">{message}</div>;
 }
 
 function StatisticBox({ label, value, unit }) {
@@ -754,6 +858,152 @@ function getBarChartOptions(metricConfig, selectedPeriod, isMobileChart) {
           font: {
             size: isMobileChart ? 10 : 12,
           },
+        },
+      },
+    },
+  };
+}
+
+function buildSimatMonthlyChartData(simatHistory, metricKey) {
+  const monthlyRecords = getLastStoredMonthRecords(simatHistory, "fecha_hora");
+
+  return {
+    labels: monthlyRecords.map((item) => item.fecha_hora),
+    datasets: [
+      {
+        label: `SIMAT GAM ${metricKey === "pm2_5" ? "PM₂.₅" : "PM₁₀"}`,
+        data: monthlyRecords.map((item) => toChartNumber(item[metricKey])),
+        borderColor: "#0284c7",
+        backgroundColor: "#0284c7",
+        tension: 0.35,
+        spanGaps: true,
+      },
+    ],
+  };
+}
+
+function buildNodeMonthlyChartData(measurements, metricKey) {
+  const monthlyRecords = getLastStoredMonthRecords(measurements, "fecha_hora");
+
+  const interiorRecords = monthlyRecords.filter(
+    (item) => String(item.tipo_nodo).toLowerCase() === "interior"
+  );
+
+  const exteriorRecords = monthlyRecords.filter(
+    (item) => String(item.tipo_nodo).toLowerCase() === "exterior"
+  );
+
+  const labels = monthlyRecords.map((item) => item.fecha_hora);
+  const uniqueLabels = [...new Set(labels)];
+
+  return {
+    labels: uniqueLabels,
+    datasets: [
+      {
+        label: `Nodos interiores ${metricKey === "pm2_5" ? "PM₂.₅" : "PM₁₀"}`,
+        data: uniqueLabels.map((label) =>
+          getAverageForLabel(interiorRecords, metricKey, label)
+        ),
+        borderColor: "#6366f1",
+        backgroundColor: "#6366f1",
+        tension: 0.35,
+        spanGaps: true,
+      },
+      {
+        label: `Nodo exterior ${metricKey === "pm2_5" ? "PM₂.₅" : "PM₁₀"}`,
+        data: uniqueLabels.map((label) =>
+          getAverageForLabel(exteriorRecords, metricKey, label)
+        ),
+        borderColor: "#f59e0b",
+        backgroundColor: "#f59e0b",
+        tension: 0.35,
+        spanGaps: true,
+      },
+    ],
+  };
+}
+
+function getLastStoredMonthRecords(records, dateKey) {
+  const sortedRecords = records
+    .filter((item) => parseMeasurementDate(item[dateKey]))
+    .sort((a, b) => {
+      const dateA = parseMeasurementDate(a[dateKey]).getTime();
+      const dateB = parseMeasurementDate(b[dateKey]).getTime();
+      return dateA - dateB;
+    });
+
+  if (sortedRecords.length === 0) {
+    return [];
+  }
+
+  const latestDate = parseMeasurementDate(
+    sortedRecords[sortedRecords.length - 1][dateKey]
+  );
+
+  const startDate = new Date(latestDate);
+  startDate.setDate(latestDate.getDate() - 30);
+
+  return sortedRecords.filter((item) => {
+    const itemDate = parseMeasurementDate(item[dateKey]);
+    return itemDate >= startDate && itemDate <= latestDate;
+  });
+}
+
+function toChartNumber(value) {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+function getSimatComparisonChartOptions(isMobileChart, metricLabel) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    resizeDelay: 200,
+    interaction: {
+      mode: "nearest",
+      intersect: true,
+    },
+    plugins: {
+      legend: {
+        position: "bottom",
+        labels: {
+          boxWidth: isMobileChart ? 10 : 14,
+          font: {
+            size: isMobileChart ? 10 : 12,
+          },
+        },
+      },
+      tooltip: {
+        intersect: true,
+        mode: "nearest",
+        callbacks: {
+          title: (tooltipItems) => {
+            const label = tooltipItems[0]?.label;
+            return formatChartTooltipTitle(label);
+          },
+          label: (context) =>
+            `${context.dataset.label}: ${context.raw ?? "—"} µg/m³`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        ticks: {
+          autoSkip: true,
+          maxTicksLimit: isMobileChart ? 5 : 10,
+          maxRotation: isMobileChart ? 35 : 45,
+          minRotation: isMobileChart ? 35 : 45,
+          callback: function (value) {
+            const label = this.getLabelForValue(value);
+            return formatChartTickLabel(label, "30d");
+          },
+        },
+      },
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: `${metricLabel} (µg/m³)`,
         },
       },
     },
